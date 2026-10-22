@@ -1,0 +1,9 @@
+{
+  "name": "lifepilot-glasses",
+  "version": "0.1.0",
+  "description": "LifePilot AIUI agent for Rokid Glasses",
+  "main": "app.js",
+  "type": "module",
+  "private": true,
+  "dependencies": {}
+}
