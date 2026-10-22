@@ -5,6 +5,15 @@
 - [x] 안경 로직 테스트: `node --test "tests/*.test.mjs"` (20개)
 - [x] AIUI 구조 검사: `node tools/validate-agent.mjs glasses`
 - [ ] 실제 모델 픽스처 10장 중 8장 이상 기대 kind 일치 (`LIFEPILOT_LIVE=1`, 사진 필요)
+- [x] 실제 모델 스모크 테스트 (2026-10-22, 합성 WebP 이미지 3장, `claude-opus-5-5` effort low, fallbacks on)
+
+  | 이미지 | 기대 | 결과 | 지연 |
+  | --- | --- | --- | --- |
+  | 세탁기 패널 "E4" | safety/step/clarify | clarify "세탁기 E4 에러 해결, 맞아?" (목표 추정 포함) | 8.3초 |
+  | 같은 패널, 강한 흐림 | recapture | recapture "표시창에 가까이, 흔들림 없이" | 5.3초 |
+  | 거의 검은 화면 | recapture | recapture "조명 켜고 대상을 가까이 비춰줘" | 4.2초 |
+
+  스키마 위반·재요청 0건. 지연이 5초 목표를 넘는 경우가 있어 실기 측정 후 effort·이미지 크기 조정 검토.
 
 ## 2. 시뮬레이터 (Studio Device Simulation)
 `lib/config.js`의 `mockKind: 'scenario'`로 서버 없이 먼저, 그다음 실제 서버로.
