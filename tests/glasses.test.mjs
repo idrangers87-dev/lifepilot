@@ -132,7 +132,7 @@ function fakeServer(analyzeQueue, extra = {}) {
   return { fetchImpl, requests };
 }
 
-const CONFIG = { serverBaseUrl: 'http://srv', serverToken: 'tok', requestTimeoutMs: 50, intentTimeoutMs: 50, mockKind: '', asrLang: 'ko-KR', slowAfterMs: 3000, doneToHomeMs: 3000 };
+const CONFIG = { serverBaseUrl: 'http://srv', serverToken: 'tok', resizeOnDevice: true, requestTimeoutMs: 50, intentTimeoutMs: 50, mockKind: '', asrLang: 'ko-KR', slowAfterMs: 3000, doneToHomeMs: 3000 };
 
 test('API: 토큰 헤더, 재시도 가능한 오류는 1회 재시도, 오류 정규화', async () => {
   const { fetchImpl, requests } = fakeServer([{ status: 502, data: { error: 'model_unavailable', retryable: true } }, resp('step')]);
@@ -394,6 +394,14 @@ test('촬영이 응답하지 않으면 시간 제한 후 오류 화면, 축소�
   await p;
   assert.ok(t.texts().includes('커버를 열어'));
   assert.equal(t.server.requests.filter((r) => r.path === '/analyze')[0].body.image, 'data:image/webp;base64,UklGRg==');
+});
+
+test('기본 설정(resizeOnDevice: false)에서는 축소를 건너뛰고 원본을 보낸다', async () => {
+  let called = 0;
+  const t = setup({ queue: [resp('step')], config: { resizeOnDevice: false }, prepare: async () => { called += 1; return { dataUrl: 'x', resized: true }; } });
+  await t.controller.handleUtterance('이거 어떻게 해');
+  assert.equal(called, 0);
+  assert.equal(t.server.requests.find((r) => r.path === '/analyze').body.image, 'data:image/webp;base64,UklGRg==');
 });
 
 test('홈에서 스와이프하면 말 없이 바로 시작(촬영·분석)', async () => {
