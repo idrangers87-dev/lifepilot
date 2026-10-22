@@ -7,7 +7,7 @@
 | --- | --- | --- |
 | 음성 결과 콜백에서 `takePhoto()` 호출 | wx.md: "requires an interactive call site" | 막히면 "버튼을 눌러 찍어줘" → 템플 탭으로 촬영(구현됨) |
 | 카메라 출력 형식 | 공식 scanner 샘플이 WebP를 디코딩 | 서버가 JPEG/PNG/WebP 모두 받음 |
-| 안경에서 1024px JPEG로 축소 | canvas.md `convertToBlob`, window.md `createImageBlob`, media.md `createImageBitmap` | 실패하면 원본 전송, 서버가 축소 |
+| 안경에서 1024px JPEG로 축소 | canvas.md `convertToBlob`, window.md `createImageBlob`, media.md `createImageBitmap` | Studio 시뮬레이터에서 런타임이 멈춰 **기본 끔**(`resizeOnDevice`). 원본 전송, 서버가 축소. 실기에서 업로드가 느리면 켜서 시험 |
 | 한국어 음성 인식 `ko-KR` | ai.md: 언어 지원은 런타임별로 다름 | 시뮬레이터에서 먼저 확인 |
 | 한국어 TTS | ai.md: 음성 목록은 중국어·영어, `utterance.lang` 미지원 | 발음 어색하면 렌즈 문구 의존 |
 | 키 코드 | Studio 시뮬레이터에서 확인: 모든 템플 동작 앞에 GlobalHook, 이어서 탭=Enter·더블 탭=Backspace·앞 스와이프=ArrowUp·뒤 스와이프=ArrowDown. 실기(Glasses 1·2) 미확인 | lib/core/keys.js 표 추가 |
