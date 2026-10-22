@@ -352,6 +352,31 @@ test('목업 모드: 서버 없이 시나리오 흐름 확인', async () => {
   assert.ok(t.texts().includes('⚠ 전원 먼저 끄기'));
 });
 
+test('음성 인식 시작 실패는 삼키지 않고 디버그 경고와 로그로 남긴다', async () => {
+  const logs = [];
+  const data = {};
+  const controller = createController({
+    setData: (p) => Object.assign(data, p),
+    config: CONFIG,
+    deps: {
+      api: createApi(CONFIG, fakeServer([]).fetchImpl),
+      listener: { start() { throw Object.assign(new Error('not interactive'), { name: 'InvalidStateError' }); }, abort() {} },
+      speak() {},
+      setTimeout: () => 0,
+      clearTimeout() {},
+      now: () => 0,
+      storage: { get: () => null, set() {} },
+      log: (m) => logs.push(m),
+    },
+  });
+  controller.start();
+  controller.handleKey('GlobalHook');
+  assert.equal(data.debug.warnings[0], 'asr start failed: InvalidStateError');
+  assert.ok(logs.some((l) => l.includes('key GlobalHook → confirm (IDLE)')));
+  controller.onListenError({ message: 'permission denied' });
+  assert.equal(data.debug.warnings[0], 'asr error: permission denied');
+});
+
 test('키: 홈에서 뒤로는 기본 동작, 안내 중 뒤로는 종료, 아래=자세히, 위=다시', async () => {
   const t = setup({ queue: [resp('step', { detail: '필터는 왼쪽 아래에 있어' })] });
   assert.equal(t.controller.handleKey('Backspace'), false);

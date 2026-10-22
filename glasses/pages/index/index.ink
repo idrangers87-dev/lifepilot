@@ -45,13 +45,15 @@ export default {
       ? createListener({
           onStart() {
             page.setData({ listening: true });
+            if (page.controller) page.controller.log('asr started');
           },
           onResult(text) {
             page.setData({ listening: false });
             if (page.controller) page.controller.handleUtterance(text);
           },
-          onError() {
+          onError(err) {
             page.setData({ listening: false });
+            if (page.controller) page.controller.onListenError(err);
           },
           onEnd() {
             page.setData({ listening: false });
@@ -72,6 +74,7 @@ export default {
         clearTimeout: (id) => clearTimeout(id),
         now: () => Date.now(),
         storage: storage(),
+        log: (message) => console.log(message),
       },
     });
     this.controller.start();
@@ -82,8 +85,10 @@ export default {
     this.controller = null;
   },
 
-  onVoiceWakeup() {
-    if (this.controller) this.controller.listen();
+  onVoiceWakeup(event) {
+    if (!this.controller) return;
+    this.controller.log(`wakeup ${(event && event.keyword) || ''}`);
+    this.controller.listen();
   },
 
   onKeyDown(event) {

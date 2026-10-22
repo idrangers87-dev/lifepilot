@@ -189,6 +189,7 @@ export function createController({ setData, config, deps }) {
   }
 
   async function handleUtterance(text) {
+    log(`heard "${String(text).slice(0, 30)}"`);
     let intent = matchIntent(text);
     if (intent === 'unknown' && st.state === GUIDING) {
       const r = await deps.api.intent(ctx.sessionId, text); // 키워드로 못 잡은 것만 서버에 묻는다
@@ -199,17 +200,34 @@ export function createController({ setData, config, deps }) {
     return transition(onIntent(st, intent, { goal: intent === 'start' ? goalFrom(text) : '' }));
   }
 
-  /** 반드시 키·웨이크업 처리 중에 호출(ASR 시작은 상호작용 필요). */
+  function log(message) {
+    if (deps.log) deps.log(`[LifePilot] ${message}`);
+  }
+
+  function warn(message) {
+    debug.warnings = [message, ...debug.warnings].slice(0, 5);
+    log(message);
+    publish();
+  }
+
+  /** 반드시 키·웨이크업 처리 중에 호출(ASR 시작은 상호작용 필요). 실패는 삼키지 않고 디버그·로그에 남긴다. */
   function listen() {
-    if (!deps.listener) return;
+    if (!deps.listener) {
+      warn('asr: SpeechRecognition unavailable');
+      return;
+    }
     try {
       deps.listener.start(config.asrLang);
-    } catch (_) {}
+      log(`asr start (${config.asrLang})`);
+    } catch (error) {
+      warn(`asr start failed: ${String((error && (error.name || error.message)) || error)}`);
+    }
   }
 
   /** @returns {boolean} 페이지가 기본 동작을 막아야 하면 true */
   function handleKey(code) {
     const action = keyAction(code);
+    log(`key ${code} → ${action || 'unmapped'} (${st.state})`);
     if (!action) return false;
     if (action === 'back') {
       if (debug.open) {
@@ -246,5 +264,14 @@ export function createController({ setData, config, deps }) {
     if (deps.listener) deps.listener.abort();
   }
 
-  return { start, dispose, handleUtterance, handleKey, listen, _get: () => ({ st, ctx, debug }) };
+  /** 음성 인식 오류(권한·미인식 등)를 디버그·로그에 남긴다. */
+  function onListenError(err) {
+    if (err && err.nomatch) {
+      log('asr: no match');
+      return;
+    }
+    warn(`asr error: ${String((err && err.message) || err)}`);
+  }
+
+  return { start, dispose, handleUtterance, handleKey, listen, onListenError, log, _get: () => ({ st, ctx, debug }) };
 }
