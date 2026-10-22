@@ -1,0 +1,6 @@
+server/.venv/
+__pycache__/
+*.pyc
+node_modules/
+.env
+*.aix

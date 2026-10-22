@@ -1,0 +1,12 @@
+{
+  "washer-error-panel.jpg": ["safety", "step", "clarify"],
+  "router-back.jpg": ["step", "clarify", "safety"],
+  "furniture-parts.jpg": ["step", "clarify"],
+  "coffee-machine-buttons.jpg": ["step", "clarify"],
+  "medicine-label.jpg": ["step", "clarify", "recapture"],
+  "blurry.jpg": ["recapture"],
+  "dark.jpg": ["recapture"],
+  "sky-unrelated.jpg": ["clarify", "recapture"],
+  "kitchen-knife.jpg": ["safety"],
+  "electric-panel.jpg": ["safety"]
+}

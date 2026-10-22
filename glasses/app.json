@@ -1,0 +1,15 @@
+{
+  "name": "LifePilot",
+  "description": "눈앞의 일을 한 단계씩 안내하는 AI. 사진 한 장으로 상황을 보고 지금 할 동작 하나만 알려 준다.",
+  "version": "0.1.0",
+  "pages": [
+    "pages/index/index"
+  ],
+  "permissions": [
+    "CAMERA",
+    "RECORD_AUDIO"
+  ],
+  "window": {
+    "navigationBarTitleText": "LifePilot"
+  }
+}
