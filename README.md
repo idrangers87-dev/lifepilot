@@ -57,7 +57,11 @@ node tools/validate-agent.mjs glasses
 
 ## 안경 배포
 1. `glasses/lib/config.js`에 `serverBaseUrl`, `serverToken` 입력 (서버 없이 화면만 보려면 `mockKind: 'scenario'`)
-2. AIUI Studio → Import from GitHub(대상 디렉터리 `glasses`) 또는 로컬 CLI
+2. AIUI Studio → New Agent → Import from GitHub → `https://github.com/idrangers87-dev/lifepilot/tree/aiui`
+   - Studio 1.2.0은 `/tree/main/glasses`처럼 **하위 폴더 URL을 브랜치 이름으로 잘못 읽어** 실패한다("GitHub ref not found: main/glasses").
+     그래서 `glasses/`를 루트로 올린 `aiui` 브랜치를 따로 두고 그 브랜치를 가져온다.
+   - `glasses/`를 고친 뒤 `aiui` 브랜치 갱신:
+     `git subtree split --prefix=glasses -b aiui` 후 `git push origin aiui` (이력이 이어지므로 강제 push 불필요)
 3. Build & Review에서 Camera·Microphone·Network 권한 선언 → Package AIX
 4. Hi Rokid 앱 → Settings → Developer → Update glasses resource package
 5. "하이 로키드, 라이프파일럿 열어 줘"
