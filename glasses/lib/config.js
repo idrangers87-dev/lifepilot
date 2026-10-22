@@ -7,6 +7,8 @@ export const CONFIG = {
   serverToken: '',
   requestTimeoutMs: 12000,
   intentTimeoutMs: 4000,
+  captureTimeoutMs: 15000, // 촬영(시뮬레이터에서는 확인 창 포함) 제한
+  prepareTimeoutMs: 5000, // 안경에서 이미지 축소 제한(넘으면 원본 전송)
   // 서버 없이 화면·상태 흐름을 확인하는 목업: '' | 'scenario' | 'step' | 'recapture' | 'clarify' | 'safety' | 'done' | 'error'
   mockKind: '',
   asrLang: 'ko-KR',

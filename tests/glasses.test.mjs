@@ -154,7 +154,7 @@ test('API: 토큰 헤더, 재시도 가능한 오류는 1회 재시도, 오류 �
 
 // ---------- 컨트롤러: 3분 시연 시나리오 ----------
 
-function setup({ queue = [], extra = {}, config = {}, capture } = {}) {
+function setup({ queue = [], extra = {}, config = {}, capture, prepare } = {}) {
   const server = fakeServer(queue, extra);
   const data = {};
   const spoken = [];
@@ -172,7 +172,7 @@ function setup({ queue = [], extra = {}, config = {}, capture } = {}) {
         captures.push(1);
         return { dataUrl: 'data:image/webp;base64,UklGRg==', mimeType: 'image/webp', bytes: 4 };
       }),
-      prepareImage: async (shot) => ({ dataUrl: shot.dataUrl, resized: false }),
+      prepareImage: prepare || (async (shot) => ({ dataUrl: shot.dataUrl, resized: false })),
       speak: (t) => spoken.push(t),
       listener: { start: (lang) => listenerStarts.push(lang), abort() {} },
       setTimeout: (fn, ms) => timers.push({ fn, ms }) - 1,
@@ -375,6 +375,25 @@ test('음성 인식 시작 실패는 삼키지 않고 디버그 경고와 로그
   assert.ok(logs.some((l) => l.includes('key Enter → confirm (IDLE)')));
   controller.onListenError({ message: 'permission denied' });
   assert.equal(data.debug.warnings[0], 'asr error: permission denied');
+});
+
+test('촬영이 응답하지 않으면 시간 제한 후 오류 화면, 축소가 늦으면 원본 전송', async () => {
+  const hang = setup({ capture: () => new Promise(() => {}) });
+  const pending = hang.controller.handleUtterance('이거 어떻게 해');
+  await new Promise((r) => setTimeout(r, 0));
+  hang.fire(15000);
+  await pending;
+  assert.ok(hang.texts().includes('! 생각이 길어져'));
+  assert.equal(hang.server.requests.filter((r) => r.path === '/analyze').length, 0);
+
+  const t = setup({ queue: [resp('step', { lens: ['커버를 열어'] })], prepare: () => new Promise(() => {}) });
+  const p = t.controller.handleUtterance('이거 어떻게 해');
+  await new Promise((r) => setTimeout(r, 0));
+  await new Promise((r) => setTimeout(r, 0));
+  t.fire(5000); // 축소 제한 시간
+  await p;
+  assert.ok(t.texts().includes('커버를 열어'));
+  assert.equal(t.server.requests.filter((r) => r.path === '/analyze')[0].body.image, 'data:image/webp;base64,UklGRg==');
 });
 
 test('홈에서 스와이프하면 말 없이 바로 시작(촬영·분석)', async () => {

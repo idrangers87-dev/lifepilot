@@ -5,7 +5,7 @@ import { matchIntent, goalFrom } from './intent.js';
 import { initialState, onIntent, onResult, onError, IDLE, ANALYZING, GUIDING, DONE } from './state.js';
 import { render, speechFor } from './format.js';
 import { keyAction } from './core/keys.js';
-import { toAssistantError } from './core/errors.js';
+import { AssistantError, ERR, toAssistantError } from './core/errors.js';
 import { ApiError } from './api.js';
 
 const CAPTURE_CODES = {
@@ -115,6 +115,23 @@ export function createController({ setData, config, deps }) {
     return run(result.effects);
   }
 
+  /** promise가 ms 안에 끝나지 않으면 onTimeout()의 결과(또는 예외)로 대신한다. 타이머는 deps로 주입. */
+  function withDeadline(promise, ms, onTimeout) {
+    let timer = null;
+    const deadline = new Promise((resolve, reject) => {
+      timer = deps.setTimeout(() => {
+        try {
+          resolve(onTimeout());
+        } catch (error) {
+          reject(error);
+        }
+      }, ms);
+    });
+    return Promise.race([Promise.resolve(promise), deadline]).finally(() => {
+      timer = clear(timer);
+    });
+  }
+
   async function ensureSession(force) {
     if (ctx.sessionId && !force) return;
     const s = await deps.api.session(ctx.goal);
@@ -136,8 +153,15 @@ export function createController({ setData, config, deps }) {
     try {
       if (!deps.api.configured()) throw new ApiError('not_configured', false);
       await ensureSession(false);
-      let shot = await deps.captureStill(); // 요청 1회 = 캡처 1회
-      const image = await deps.prepareImage(shot);
+      log('capture start');
+      // 요청 1회 = 캡처 1회. 촬영이 응답하지 않으면 시간 제한으로 오류 화면에 보낸다.
+      let shot = await withDeadline(deps.captureStill(), config.captureTimeoutMs || 15000, () => {
+        throw new AssistantError(ERR.TIMEOUT, 'capture timeout');
+      });
+      log(`capture ok ${shot.mimeType || ''} ${shot.bytes || ''}B`);
+      // 축소는 최선 노력: 늦으면 원본을 그대로 보내고 서버가 줄인다.
+      const image = await withDeadline(deps.prepareImage(shot), config.prepareTimeoutMs || 5000, () => ({ dataUrl: shot.dataUrl, resized: false }));
+      log(`image ${image.resized ? 'resized' : 'original'} ${image.dataUrl.length} chars`);
       shot = null;
       const payload = { sessionId: ctx.sessionId, image: image.dataUrl, utterance: request.utterance, userReply: request.userReply };
       let res;
