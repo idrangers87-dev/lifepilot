@@ -248,6 +248,11 @@ export function createController({ setData, config, deps }) {
       }
       return true;
     }
+    if (st.state === IDLE) {
+      // 홈에서 스와이프 = 말 없이 바로 시작("이거 어떻게 해"와 같음). 키 처리 중이라 촬영도 허용된다.
+      transition(onIntent(st, 'start'));
+      return true;
+    }
     if (st.state !== GUIDING) return false;
     transition(onIntent(st, action === 'next' ? 'detail' : 'repeat'));
     return true;

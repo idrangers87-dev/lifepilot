@@ -10,7 +10,8 @@
 | 안경에서 1024px JPEG로 축소 | canvas.md `convertToBlob`, window.md `createImageBlob`, media.md `createImageBitmap` | 실패하면 원본 전송, 서버가 축소 |
 | 한국어 음성 인식 `ko-KR` | ai.md: 언어 지원은 런타임별로 다름 | 시뮬레이터에서 먼저 확인 |
 | 한국어 TTS | ai.md: 음성 목록은 중국어·영어, `utterance.lang` 미지원 | 발음 어색하면 렌즈 문구 의존 |
-| 키 코드(Enter·Backspace·Arrow·GlobalHook) | events.md: Rokid Glasses 1세대만 확인, Glasses 2 미확인 | lib/core/keys.js 표 추가 |
+| 키 코드 | Studio 시뮬레이터에서 확인: 모든 템플 동작 앞에 GlobalHook, 이어서 탭=Enter·더블 탭=Backspace·앞 스와이프=ArrowUp·뒤 스와이프=ArrowDown. 실기(Glasses 1·2) 미확인 | lib/core/keys.js 표 추가 |
+| 시뮬레이터 음성 입력 | 웨이크업·탭 후 앱 음성 인식은 시작되지만, 확장 프로그램으로 넣은 텍스트는 앱에 전달되지 않았음 | 홈에서 스와이프로 바로 시작(음성 없이) |
 
 ## 의도적으로 하지 않는 것
 - 연속 영상 분석, 손 추적, 제스처 인식 (요청 1회 = 캡처 1회)

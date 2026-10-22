@@ -39,7 +39,6 @@ export default {
   },
 
   onLoad() {
-    this.lastHookAt = 0;
     const page = this;
     const listener = isRecognitionSupported()
       ? createListener({
@@ -91,20 +90,10 @@ export default {
     this.controller.listen();
   },
 
-  onKeyDown(event) {
-    if (event && event.code === 'GlobalHook' && this.controller) {
-      this.lastHookAt = Date.now();
-      this.controller.handleKey('GlobalHook');
-    }
-  },
-
+  // 템플 동작마다 먼저 오는 GlobalHook은 lib/core/keys.js 표에 없어 무시되고,
+  // 이어서 오는 Enter(탭)·Backspace(더블 탭)·ArrowUp/Down(스와이프)으로 동작을 구분한다.
   onKeyUp(event) {
     if (!event || !this.controller) return;
-    if (event.code === 'GlobalHook') {
-      if (Date.now() - this.lastHookAt < 800) return;
-      this.controller.handleKey('GlobalHook');
-      return;
-    }
     if (this.controller.handleKey(event.code)) event.preventDefault();
   },
 

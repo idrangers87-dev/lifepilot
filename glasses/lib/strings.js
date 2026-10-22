@@ -8,7 +8,7 @@ export const S = {
   homePrompt: '"이거 어떻게 해?"',
   homePrompt2: '라고 말해',
   homeRecent: (task) => `최근: ${task}`,
-  homeHint: '버튼 누르고 말하기',
+  homeHint: '탭: 말하기 · 스와이프: 바로 시작',
 
   // 분석 중
   analyzing: '보는 중…',

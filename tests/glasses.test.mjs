@@ -370,11 +370,31 @@ test('음성 인식 시작 실패는 삼키지 않고 디버그 경고와 로그
     },
   });
   controller.start();
-  controller.handleKey('GlobalHook');
+  controller.handleKey('Enter');
   assert.equal(data.debug.warnings[0], 'asr start failed: InvalidStateError');
-  assert.ok(logs.some((l) => l.includes('key GlobalHook → confirm (IDLE)')));
+  assert.ok(logs.some((l) => l.includes('key Enter → confirm (IDLE)')));
   controller.onListenError({ message: 'permission denied' });
   assert.equal(data.debug.warnings[0], 'asr error: permission denied');
+});
+
+test('홈에서 스와이프하면 말 없이 바로 시작(촬영·분석)', async () => {
+  for (const code of ['ArrowDown', 'ArrowUp']) {
+    const t = setup({ queue: [resp('step', { lens: ['커버를 열어'] })] });
+    assert.equal(t.controller.handleKey(code), true);
+    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
+    assert.ok(t.texts().includes('커버를 열어'), code);
+    assert.deepEqual(t.server.requests.filter((r) => r.path === '/analyze').map((r) => r.body.utterance), ['start']);
+    assert.deepEqual(t.listenerStarts, []); // 음성 인식은 켜지 않는다
+  }
+});
+
+test('시뮬레이터 템플 신호: GlobalHook은 무시하고 뒤따르는 키로만 동작', () => {
+  const t = setup();
+  assert.equal(t.controller.handleKey('GlobalHook'), false);
+  assert.deepEqual(t.listenerStarts, []);
+  t.controller.handleKey('Enter');
+  assert.deepEqual(t.listenerStarts, ['ko-KR']); // 탭 한 번 = 듣기 한 번
 });
 
 test('키: 홈에서 뒤로는 기본 동작, 안내 중 뒤로는 종료, 아래=자세히, 위=다시', async () => {
